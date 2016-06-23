@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <title>Lung Carcinogenic Insight Demo 2016</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="starter-template.css" rel="stylesheet">
+
+    <!-- Mapbox GL JS -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.css' rel='stylesheet' />
+
+<!-- Style Settings -->
+<style>
+body { margin:0; padding:0; }
+h2, h3 {
+    margin: 10px;
+    font-size: 1.2em;
+}
+h3 {
+    font-size: 1em;
+}
+p {
+    font-size: 0.85em;
+    margin: 10px;
+    text-align: left;
+}
+/**
+* Create a position for the map
+* on the page */
+#map {
+    position:relative;
+    top:0;
+    bottom:0;
+    width:100%;
+}
+/**
+* Set rules for how the map overlays
+* (info box and legend) will be displayed
+* on the page. */
+.map-overlay {
+    display:inline-block;
+    position:relative;
+    bottom: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.8);
+    margin:auto;
+    font-family: Arial, sans-serif;
+    overflow: auto;
+    border: 3px;
+}
+#features {
+    top: 0;
+    height: 100px;
+    margin-top: 20px;
+    width: 250px;
+}
+.legend {
+    background-color: #fff;
+    border-radius: 3px;
+    bottom: 30px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    padding: 10px;
+    position: relative;
+    right: 10px;
+    z-index: 1;
+}
+
+.legend h4 {
+    margin: 0 0 10px;
+}
+
+.legend div span {
+    border-radius: 50%;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+}
+
+</style>
+
+</head>
+
+<script>
+var latitude = '{{ latitude }}';
+var longitude = '{{ longitude }}';
+</script>
+
+<body>
+
+<br></br>
+
+<!-- Navigation Bar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Lung Carcinogenic</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Slides</a></li>
+            <li><a href="#about">About Me</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+<br></br>
+
+<style>
+    #fly {
+        display: block;
+        position: relative;
+        margin: 0px auto;
+        width: 50%;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #fff;
+        background: #ee8a65;
+    }
+</style>
+
+<!-- INPUT CONTAINER -->
+<div class="container">
+    <div class="starter-template">
+        <h2>Predict Radon-induced Lung Cancer mortality risk based on geospatial soil data</h2>
+        <h3>Please enter a US location</h3>	
+    </div>
+
+    <div class = "container">
+
+      <form  action="/output" method="GET">
+        <div class="form-group">
+          <label for="us_county">US Location:</label>
+          <input type="text" id="us_county" name='us_county' placeholder="e.g. ">
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-default btn-lg">Predict!</button>
+          <!-- <button onclick='fly();' id='fly'>Predict!</button> -->
+        </div>
+
+    	<!-- <div class="container">
+        	<h2>INPUT COORDINATES:</h2>
+		<p>{{ latitude }}</p>
+		<p>{{ longitude }}</p>
+    	</div> -->
+
+	<!-- <div class="container">
+		<h2>Predicted Lung Cancer Mortality (average deaths) for this county</ title>
+		{{lcmRadonResult | safe}}
+	</div> -->
+
+      </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+</div>
+
+<br/>
+<button onclick='fly();' id='fly'>Map!</button>
+<br/>
+<div class = "container">
+	<!-- Mapbox Indoor Radon Zones ONLY
+	<div class="container">
+		<div id='mapRadon' style='width: 1000px; height: 600px;'></div>
+		<div id='radon-legend' class='legend'>
+    			<h4>US Radon Zones</h4>
+    			<div><span style='background-color: #FF0000'></span>US Radon Zone 1 (More than 4 pCI/L)</div>
+    			<div><span style='background-color: #FF8000'></span>US Radon Zone 2 (Between 2-4 pCI/L)</div>
+    			<div><span style='background-color: #FFFF00'></span>US Radon Zone 3 (Less than 2 pCI/L)</div>
+		</div>
+	</div> -->
+	<br/>
+	<!-- Mapbox Radon-induced Expected Lung Cancer deaths ONLY -->
+	<div class="container">
+		<div id='mapRadonLCM' style='width: 1000px; height: 600px;'></div>
+		<div id='expectedradonlcm-legend' class='legend'>
+		    	<h4>Predicted US Radon-Induced Lung Cancer Mortality Risk based on county-averaged soil data</h4>
+    			<div><span style='background-color: #C3A3FF'></span>Predicted 0-10 Deaths</div>
+    			<div><span style='background-color: #9257FF'></span>Predicted 10-30 Deaths</div>
+    			<div><span style='background-color: #5900FF'></span>Predicted 30-50 Deaths</div>
+			<div><span style='background-color: #387aFF'></span>Predicted 50-70 Deaths</div>
+			<div><span style='background-color: #0055FF'></span>Predicted >70 Deaths</div>
+		</div>
+	</div>
+	<br/>
+        <!-- Mapbox Soil Types ONLY (Only Norfolk/Suffolk, MA Counties)
+	<div class="container">
+		<div id='mapSoils' style='width: 1000px; height: 600px;'></div>
+	</div> -->
+	<br/>
+</div>
+<br/>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiYW51YXJpbWFuODciLCJhIjoiY2lwOHBuOGFjMDFjbXRjbHl2cWgwYzVqaCJ9.0Zzg9REzmXXC3ps3SfNo6g';
+var latitude = '{{ latitude }}';
+//var latitude = parseFloat('{{ latitude }}');
+var longitude = '{{ longitude }}';
+//var longitude = parseFloat('{{ longitude }}');
+
+//var mapRadon = new mapboxgl.Map({
+//    container: 'mapRadon',
+//    style: 'mapbox://styles/anuariman87/cipq1yp0l0017bjm7lteip145'
+//});
+
+var mapRadonLCM = new mapboxgl.Map({
+    container: 'mapRadonLCM',
+    style: 'mapbox://styles/anuariman87/cipq1ewuz001rb2nc6qs6o8zd'
+});
+
+//var mapSoils = new mapboxgl.Map({
+//    container: 'mapSoils',
+//    style: 'mapbox://styles/anuariman87/cipjv2878001fbokkslnkhykk',
+//    center: [-71.050423, 42.352287],
+//    zoom: 10,
+//    minZoom: 10
+//});
+
+
+// Default Mouse Cursor over the map
+//mapRadon.getCanvas().style.cursor = 'default';
+mapRadonLCM.getCanvas().style.cursor = 'default';
+//mapSoils.getCanvas().style.cursor = 'default';
+// Center on United States
+//mapRadon.fitBounds([[-133.2421875, 16.972741], [-47.63671875, 52.696361]]);
+mapRadonLCM.fitBounds([[-133.2421875, 16.972741], [-47.63671875, 52.696361]]);
+
+function fly() {
+    // Fly to a specific location of input
+//    mapRadon.flyTo({
+//	// Middlesex County, Massachusetts [longitude, latitude] Works!
+//        // center: [-71.287421, 42.467206],
+//        center: [longitude, latitude],
+// 	zoom: 9
+//    });
+    mapRadonLCM.flyTo({
+	// Middlesex County, Massachusetts [longitude, latitude] Works!
+        // center: [-71.287421, 42.467206],
+        center: [longitude, latitude],
+ 	zoom: 9
+    });
+//    mapSoils.flyTo({
+//	// Middlesex County, Massachusetts [longitude, latitude] Works!
+//        // center: [-71.287421, 42.467206],
+//        center: [longitude, latitude],
+// 	zoom: 10,
+//        minZoom: 10
+//    });
+}
+
+//mapRadon.on('load', function() {
+
+ 	// the rest of the code will go in here
+	//var radonZones = ['Indoor Radon Zone 1', 'Indoor Radon Zone 2', 'Indoor Radon Zone 3'];
+
+	//radonZones.forEach(function(radonZone) {;
+  	//	var color = map.getPaintProperty(radonZone, 'fill-color');
+ 	//	var item = document.createElement('div');
+ 	//	var key = document.createElement('span');
+	//	key.className = 'legend-key';
+  	//	key.style.backgroundColor = color;
+//
+//		var value = document.createElement('span');
+// 		value.innerHTML = radonZone;
+// 		item.appendChild(key);
+//		item.appendChild(value);
+//  		legend.appendChild(item);
+//	});
+//});
+
+//map.on('mousemove', function (e) {
+//  var counties = map.queryRenderedFeatures(e.point, {
+//      radonZones: radonZones
+//  });
+//
+//  if (counties.length > 0) {
+//      document.getElementById('pd').innerHTML = "<h3><strong>" + counties[0].properties.name + "</strong></h3><p><strong><em>" + counties[0].properties.density + "</strong> predicted deaths</em></p>";
+//  } else {
+//      document.getElementById('pd').innerHTML = '<p>Hover over a county!</p>';
+//  }
+//});
+</script>
+
+<!-- Footer -->
+<div class="footer">
+	<p>&copy; Insight Health Data Science</p>
+	<p>Summer 2016 Boston</p>
+	<p>Anuar Imanbayev</p>
+</div>
+
+</body>
+</html>
